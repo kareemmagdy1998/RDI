@@ -11,6 +11,21 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os
+from django.core.exceptions import ImproperlyConfigured
+
+# Initialize the environment variables
+env = environ.Env()
+environ.Env.read_env()  # reading .env file
+
+def get_env_value(env_variable):
+    try:
+        return env(env_variable)
+    except KeyError:
+        error_msg = f"Set the {env_variable} environment variable"
+        raise ImproperlyConfigured(error_msg)
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,9 +92,13 @@ WSGI_APPLICATION = 'Documents.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": get_env_value("ENGINE"),
+        "NAME": get_env_value("NAME"),
+        "USER": get_env_value("USER"),
+        "PASSWORD": get_env_value("PASSWORD"),
+        "HOST": get_env_value("HOST"),
+        "PORT": int(get_env_value("PORT")),
     }
 }
 
