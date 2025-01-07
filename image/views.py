@@ -19,12 +19,13 @@ class FileUploadView(APIView):
 
     def post(self, request):
         file = request.data.get('file')
+        file_name = request.data.get('file_name')
         if not file:
             return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Validate file content
-            decoded_file,mime_type = decode_base64_file(file, expected_mime_types=["image/jpeg", "image/png", "application/pdf"])
+            decoded_file,mime_type = decode_base64_file(file,file_name,expected_mime_types=["image/jpeg", "image/png", "application/pdf"])
 
             if mime_type.startswith("image/"):
                 # Process and save image

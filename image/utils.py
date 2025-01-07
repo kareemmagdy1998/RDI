@@ -6,7 +6,7 @@ import magic
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
 
-def decode_base64_file(base64_string, expected_mime_types):
+def decode_base64_file(base64_string,file_name,expected_mime_types):
     """
     Decodes a Base64-encoded file and validates its MIME type.
 
@@ -17,7 +17,13 @@ def decode_base64_file(base64_string, expected_mime_types):
     try:
         # Extract the Base64 header and data
         header, base64_data = base64_string.split(";base64,")
-        file_name = header.split("/")[-1]  # Extract file extension from MIME type
+        extension = header.split("/")[-1]  # Extract file extension from MIME type
+
+        # Add padding if necessary
+        missing_padding = len(base64_data) % 4
+        if missing_padding:
+            base64_data += "=" * (4 - missing_padding)
+
         decoded_file = BytesIO(base64.b64decode(base64_data))
 
         # Validate MIME type
@@ -31,9 +37,9 @@ def decode_base64_file(base64_string, expected_mime_types):
         in_memory_file = InMemoryUploadedFile(
             file=decoded_file,
             field_name=None,
-            name=f"uploaded_file.{file_name.split('/')[-1]}",
+            name=f"{file_name}.{extension.split('/')[-1]}",
             content_type=mime_type,
-            size=len(decoded_file.getvalue()),
+            size=decoded_file.getbuffer().nbytes,
             charset=None,
         )
         return in_memory_file, mime_type
