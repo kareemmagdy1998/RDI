@@ -3,12 +3,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ValidationError
-from .models import ImageFile
-from pdf.models import PDFFile 
-from .serializers import ImageFileSerializer
-from pdf.serializers import PDFFileSerializer
-from .utils import decode_base64_file , validate_image
-from pdf.utils import validate_pdf
+from .models import ImageFile,PDFFile 
+from .serializers import ImageFileSerializer,PDFFileSerializer
+from .utils import decode_base64_file , validate_image , validate_pdf
 
 
 class FileUploadView(APIView):

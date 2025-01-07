@@ -4,6 +4,7 @@ from PIL import UnidentifiedImageError, Image
 from django.forms import ValidationError
 import magic
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from PyPDF2 import PdfReader
 
 
 def decode_base64_file(base64_string,file_name,expected_mime_types):
@@ -59,3 +60,16 @@ def validate_image(file):
             return img
         except UnidentifiedImageError:
             raise ValidationError("Invalid image file.")    
+
+
+def validate_pdf(file):
+        """
+        Validate PDF content and extract metadata.
+        """
+        try:
+            pdf_reader = PdfReader(file)
+            if not pdf_reader.pages:
+                raise ValidationError("The PDF file is empty or invalid.")
+            return pdf_reader
+        except Exception as e:
+            raise ValidationError(f"Invalid PDF file: {e}")        

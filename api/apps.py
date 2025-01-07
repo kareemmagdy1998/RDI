@@ -1,6 +1,5 @@
 from django.apps import AppConfig
 
-
-class ImageConfig(AppConfig):
+class ApiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'image'
+    name = 'api'  # Update to the new app name
