@@ -7,7 +7,7 @@ from .models import ImageFile
 from pdf.models import PDFFile 
 from .serializers import ImageFileSerializer
 from pdf.serializers import PDFFileSerializer
-from .utils import validate_file_content , validate_image
+from .utils import decode_base64_file , validate_image
 from pdf.utils import validate_pdf
 
 
@@ -18,19 +18,19 @@ class FileUploadView(APIView):
     """
 
     def post(self, request):
-        file = request.FILES.get('file')
+        file = request.data.get('file')
         if not file:
             return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Validate file content
-            mime_type = validate_file_content(file, expected_mime_types=["image/jpeg", "image/png", "application/pdf"])
+            decoded_file,mime_type = decode_base64_file(file, expected_mime_types=["image/jpeg", "image/png", "application/pdf"])
 
             if mime_type.startswith("image/"):
                 # Process and save image
-                img = validate_image(file)
+                img = validate_image(decoded_file)
                 image_file = ImageFile.objects.create(
-                    file=file,
+                    file=decoded_file,
                     width=img.width,
                     channels=len(img.getbands())
                 )
@@ -39,10 +39,10 @@ class FileUploadView(APIView):
 
             elif mime_type == "application/pdf":
                 # Process and save PDF
-                pdf_reader = validate_pdf(file)
+                pdf_reader = validate_pdf(decoded_file)
                 page = pdf_reader.pages[0]
                 pdf_file = PDFFile.objects.create(
-                    file=file,
+                    file=decoded_file,
                     number_of_pages=len(pdf_reader.pages),
                     page_width=int(page.mediabox.width),
                     page_height=int(page.mediabox.height)
