@@ -11,7 +11,7 @@ import os
 from django.core.files.base import ContentFile
 from PIL import Image
 from io import BytesIO
-
+import fitz 
 
 class FileUploadView(APIView):
     """
@@ -163,3 +163,58 @@ class RotateImageView(APIView):
 
         except Exception as e:
             return Response({"error": f"An error occurred: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
+        
+        
+class ConvertPDFToImageView(APIView):
+    """
+    Endpoint: POST /api/convert-pdf-to-image/
+    Converts a PDF to images and returns metadata for all converted images.
+    """
+    def post(self, request):
+        pdf_id = request.data.get("pdf_id")
+
+        if not pdf_id:
+            return Response({"error": "PDF ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            pdf = get_object_or_404(PDFFile, id=pdf_id)
+            pdf_path = pdf.file.path
+
+            # Open the PDF document
+            pdf_document = fitz.open(pdf_path)
+            if len(pdf_document) == 0:
+                return Response({"error": "No pages found in the PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+            converted_images = []
+
+            # Iterate over all pages and convert to images
+            for page_number in range(len(pdf_document)):
+                page = pdf_document[page_number]
+                pix = page.get_pixmap()
+                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+
+                # Save the image in memory
+                img_io = BytesIO()
+                img.save(img_io, format="JPEG")
+                img_file = ContentFile(img_io.getvalue())
+
+                # Create an ImageFile instance in the database
+                converted_filename = f"converted_page_{page_number + 1}_{os.path.basename(pdf_path)}.jpg"
+                converted_image = ImageFile.objects.create(
+                    file=img_file,
+                    width=pix.width,
+                    height=pix.height,
+                    channels=3
+                )
+                converted_image.file.save(converted_filename, img_file)
+
+                # Serialize the metadata
+                serializer = ImageFileSerializer(converted_image)
+                converted_images.append(serializer.data)
+
+            return Response(converted_images, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({"error": f"An error occurred: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        
