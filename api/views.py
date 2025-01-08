@@ -129,7 +129,7 @@ class PDFDeleteView(APIView):
 class RotateImageView(APIView):
     """
     Endpoint: POST /api/rotate/
-    Rotates an image by a specified angle.
+    Rotates an image by a specified angle and saves it in the 'uploads/rotated/' folder.
     """
     def post(self, request):
         image_id = request.data.get("image_id")
@@ -148,22 +148,32 @@ class RotateImageView(APIView):
                 rotated_image_io = BytesIO()
                 rotated_image.save(rotated_image_io, format=img.format)
 
-            # Save rotated image back to file system
-            rotated_filename = f"rotated_{os.path.basename(img_path)}"
-            rotated_file = ContentFile(rotated_image_io.getvalue())
-            image.file.save(rotated_filename, rotated_file)
+            # Define a new folder for rotated images (outside 'images' folder)
+            rotated_folder = os.path.join(os.path.dirname(os.path.dirname(img_path)), "rotated")
+            os.makedirs(rotated_folder, exist_ok=True)  # Create folder if it doesn't exist
 
-            # Update metadata in the database
-            rotated_image = Image.open(image.file.path)
-            image.width, image.height = rotated_image.size
-            image.save()
+            # Add rotation angle to the file name
+            original_name, extension = os.path.splitext(os.path.basename(img_path))
+            rotated_filename = os.path.join(rotated_folder, f"{original_name}_rotated_{angle}{extension}")
 
-            serializer = ImageFileSerializer(image)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Save the rotated image in the new folder
+            with open(rotated_filename, "wb") as rotated_file:
+                rotated_file.write(rotated_image_io.getvalue())
+
+            # Get metadata of the rotated image
+            rotated_image = Image.open(rotated_filename)
+            metadata = {
+                "file": rotated_filename,
+                "width": rotated_image.width,
+                "height": rotated_image.height,
+                "channels": len(rotated_image.getbands())
+            }
+
+            return Response(metadata, status=status.HTTP_200_OK)
 
         except Exception as e:
-            return Response({"error": f"An error occurred: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
-        
+            return Response({"error": f"An error occurred: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         
 class ConvertPDFToImageView(APIView):
     """
