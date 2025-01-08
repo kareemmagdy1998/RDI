@@ -31,6 +31,7 @@ class FileUploadView(APIView):
                 image_file = ImageFile.objects.create(
                     file=decoded_file,
                     width=img.width,
+                    height=img.height,
                     channels=len(img.getbands())
                 )
                 serializer = ImageFileSerializer(image_file)
