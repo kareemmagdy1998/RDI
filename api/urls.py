@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import FileUploadView, ImageListView, PDFListView, ImageDetailView, PDFDetailView, ImageDeleteView
+from .views import FileUploadView, ImageListView, PDFDeleteView, PDFListView, ImageDetailView, PDFDetailView, ImageDeleteView
 
 urlpatterns = [
     path('upload/', FileUploadView.as_view(), name='file-upload'),
@@ -8,4 +8,5 @@ urlpatterns = [
     path('images/<int:id>/', ImageDetailView.as_view(), name='image-detail'),
     path('pdfs/<int:id>/', PDFDetailView.as_view(), name='pdf-detail'),
     path('images/<int:id>/delete/', ImageDeleteView.as_view(), name='image-delete'),
+    path('pdfs/<int:id>/delete/', PDFDeleteView.as_view(), name='pdf-delete'),
 ]

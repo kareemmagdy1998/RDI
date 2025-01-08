@@ -109,3 +109,14 @@ class ImageDeleteView(APIView):
         image.file.delete(save=False)  # Deletes the file from storage
         image.delete()  # Deletes the record from the database
         return Response({"message": "Image deleted successfully"}, status=status.HTTP_204_NO_CONTENT)    
+
+class PDFDeleteView(APIView):
+    """
+    Endpoint: DELETE /api/pdfs/{id}/
+    Deletes a specific PDF.
+    """
+    def delete(self, request, id):
+        pdf = get_object_or_404(PDFFile, id=id)
+        pdf.file.delete(save=False)  # Deletes the file from storage
+        pdf.delete()  # Deletes the record from the database
+        return Response({"message": "PDF deleted successfully"}, status=status.HTTP_204_NO_CONTENT)    
