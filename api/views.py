@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 import magic
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -52,3 +53,47 @@ class FileUploadView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"error": "Unsupported file type"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ImageListView(APIView):
+    """
+    Endpoint: GET /api/images/
+    Returns a list of all uploaded images.
+    """
+    def get(self, request):
+        images = ImageFile.objects.all()
+        serializer = ImageFileSerializer(images, many=True)
+        return Response(serializer.data)
+
+
+class PDFListView(APIView):
+    """
+    Endpoint: GET /api/pdfs/
+    Returns a list of all uploaded PDFs.
+    """
+    def get(self, request):
+        pdfs = PDFFile.objects.all()
+        serializer = PDFFileSerializer(pdfs, many=True)
+        return Response(serializer.data)
+
+
+class ImageDetailView(APIView):
+    """
+    Endpoint: GET /api/images/{id}/
+    Returns metadata of a specific image.
+    """
+    def get(self, request, id):
+        image = get_object_or_404(ImageFile, id=id)
+        serializer = ImageFileSerializer(image)
+        return Response(serializer.data)
+
+
+class PDFDetailView(APIView):
+    """
+    Endpoint: GET /api/pdfs/{id}/
+    Returns metadata of a specific PDF.
+    """
+    def get(self, request, id):
+        pdf = get_object_or_404(PDFFile, id=id)
+        serializer = PDFFileSerializer(pdf)
+        return Response(serializer.data)
