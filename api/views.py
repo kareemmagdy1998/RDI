@@ -98,3 +98,14 @@ class PDFDetailView(APIView):
         pdf = get_object_or_404(PDFFile, id=id)
         serializer = PDFFileSerializer(pdf)
         return Response(serializer.data)
+
+class ImageDeleteView(APIView):
+    """
+    Endpoint: DELETE /api/images/{id}/
+    Deletes a specific image.
+    """
+    def delete(self, request, id):
+        image = get_object_or_404(ImageFile, id=id)
+        image.file.delete(save=False)  # Deletes the file from storage
+        image.delete()  # Deletes the record from the database
+        return Response({"message": "Image deleted successfully"}, status=status.HTTP_204_NO_CONTENT)    
