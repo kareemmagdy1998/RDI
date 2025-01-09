@@ -16,6 +16,5 @@ myenv/
 
 # Migrations
 migrations/ 
-
-
+.pytest_cache/
 commands.txt
