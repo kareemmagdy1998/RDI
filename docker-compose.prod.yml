@@ -9,6 +9,14 @@ services:
       - .env
     depends_on:
       - db
+    environment:
+      DJANGO_SETTINGS_MODULE: Documents.settings.production  # Explicitly set the settings module
+    command: >
+      sh -c "
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate &&
+      gunicorn Documents.wsgi:application --bind 0.0.0.0:8000
+      "
 
   db:
     image: postgres:13
