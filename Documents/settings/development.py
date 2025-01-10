@@ -10,7 +10,7 @@ DATABASES = {
         "NAME": get_env_value("NAME"),
         "USER": get_env_value("USER"),
         "PASSWORD": get_env_value("PASSWORD"),
-        "HOST": get_env_value("HOST_DEV"),
+        "HOST": get_env_value("HOST"),
         "PORT": int(get_env_value("PORT")),
     }
 }
